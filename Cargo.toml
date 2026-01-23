@@ -1,0 +1,10 @@
+[package]
+name = "ratatui-gui"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+crossterm = "0.29.0"
+ratatui = "0.30.0"
+omc-galaxy = {path= "/Users/marco/Desktop/omc-galaxy"}
+dotenv = "0.15.0"

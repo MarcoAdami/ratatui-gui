@@ -1,4 +1,8 @@
-use ratatui::{layout::Rect, widgets::{Block, Paragraph}, Frame};
+use ratatui::{
+    Frame,
+    layout::Rect,
+    widgets::{Block, Paragraph},
+};
 
 use crate::app::App;
 

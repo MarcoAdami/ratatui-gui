@@ -1,9 +1,9 @@
+use omc_galaxy::settings::get_sunray_probability;
 use ratatui::DefaultTerminal;
 use std::time::{Duration, Instant};
 
 use crate::app::App;
-use crate::events::handle_events;
-use crate::states::GameState;
+use crate::game_state::{GameState, handle_game_state};
 use crate::ui::render_ui;
 
 impl App {
@@ -26,43 +26,49 @@ impl App {
             .map_err(|_| "Error while drawing start screen")?;
 
         // Wait for user input (Start or Quit)
-        handle_events(self)?;
+        handle_game_state(self)?;
         Ok(())
     }
 
     /// Loop: tick management and orchestrator
     fn active_loop(&mut self, terminal: &mut DefaultTerminal) -> Result<(), String> {
-        while !self.exit && self.get_game_state() == GameState::Running {
-            // 1. Always draw the current state (at 60+ FPS or as allowed by the terminal)
-            terminal
-                .draw(|frame| render_ui(self, frame))
-                .map_err(|_| "Error while drawing UI")?;
+        let mut last_frame = Instant::now();
 
-            // 2. Calculate how long to wait for the next event
-            // If a tick just passed, we wait until the next one
-            // let _timeout = self
-            //     .tick_rate
-            //     .checked_sub(self.last_tick.elapsed())
-            //     .unwrap_or(Duration::from_secs(0));
+        while !self.exit && self.gamestate == GameState::Running {
+            // --- 1. DISEGNO (Solo se è passato il tempo del frame_rate) ---
+            if last_frame.elapsed() >= self.frame_rate {
+                terminal
+                    .draw(|frame| render_ui(self, frame))
+                    .map_err(|_| "Error drawing UI")?;
+                last_frame = Instant::now();
+            }
 
-            // 3. Poll events (keyboard)
-            handle_events(self)?;
+            // --- 2. INPUT UTENTE (Non bloccante, timeout brevissimo) ---
+            // Usiamo un timeout minuscolo per non bloccare il resto della logica
+            // Attualmente non sembra necessario un timeout così breve, ma è una buona pratica
+            handle_game_state(self)?;
 
-            // 4. Poll the Library (Logic)
-            // If 100ms have passed, we ask the library for the updated snapshot
+            // --- 3. GESTIONE MESSAGGI (Continua) ---
+            // Processiamo piccoli batch ad ogni iterazione del loop
+            self.orchestrator.handle_game_messages()?;
+
+            // --- 4. TICK LOGICA (Eventi Spaziali) ---
             if self.last_tick.elapsed() >= self.tick_rate {
-                // Call your library function
-                self.planets = self.orchestrator.get_planet_states();
-                self.orchestrator.send_asteroid_to_all()?;
-                self.orchestrator.handle_game_messages()?;
-
-                // Optional: if the game needs to advance, also call update
-                // self.orchestrator.tick();
-
+                self.get_game_info();
+                self.orchestrator.send_sunray_or_asteroid()?;
                 self.last_tick = Instant::now();
             }
+
+            // --- 5. RIPOSO (Opzionale ma consigliato) ---
+            // Un piccolo sleep per non bruciare la CPU se il loop è troppo veloce
+            std::thread::sleep(Duration::from_millis(1));
         }
         Ok(())
+    }
+
+    fn get_game_info(&mut self){
+        self.planets_info = self.orchestrator.get_planets_info();
+        self.probability_sunray = get_sunray_probability();
     }
 
     /// Pause loop: only consume UI messages, time frozen
@@ -73,7 +79,7 @@ impl App {
             .map_err(|_| "Error while drawing pause screen")?;
 
         // Wait for user input
-        handle_events(self)?;
+        handle_game_state(self)?;
         Ok(())
     }
 }

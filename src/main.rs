@@ -1,7 +1,6 @@
 mod app;
-mod events;
+mod game_state;
 mod loops;
-mod states;
 mod ui;
 
 use app::App;
@@ -21,8 +20,7 @@ fn main() -> Result<(), String> {
     app.initialize_by_file()?;
 
     // Start the app
-    let result = app
-        .run(&mut terminal);
+    let result = app.run(&mut terminal);
 
     // Restore terminal
     ratatui::restore();

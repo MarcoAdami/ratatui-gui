@@ -1,9 +1,9 @@
 use omc_galaxy::Status;
 use ratatui::{
+    Frame,
     layout::{Constraint, Rect},
     style::{Color, Modifier, Style},
     widgets::{Block, Cell, Row, Table},
-    Frame,
 };
 
 use crate::app::App;
@@ -17,17 +17,18 @@ pub fn render_planets_table(app: &App, frame: &mut Frame, area: Rect) {
 
     // TODO: discriminate between the number of energy cells
     let rows: Vec<Row> = app
-        .planets
+        .planets_info
         .iter()
-        .map(|(id, st)| {
-            let energy_str = "■".repeat(0) + &"□".repeat(5);
+        .map(|(id, info)| {
+            let energy_str = "■".repeat(info.charged_cells_count)
+                + &"□".repeat(info.energy_cells.len() - info.charged_cells_count);
             // let energy_color = if p.energy == 5 {
             //     Color::Green
             // } else {
             //     Color::White
             // };
 
-            let status = match st {
+            let status = match info.status {
                 Status::Running => "Running",
                 Status::Paused => "Paused",
                 Status::Dead => "Dead",
@@ -35,7 +36,7 @@ pub fn render_planets_table(app: &App, frame: &mut Frame, area: Rect) {
 
             Row::new(vec![
                 Cell::from(id.to_string()),
-                Cell::from("-".to_string()),
+                Cell::from(info.rocket.to_string()),
                 Cell::from(energy_str),
                 Cell::from(status.to_string()),
                 Cell::from("-".to_string()),
@@ -46,7 +47,7 @@ pub fn render_planets_table(app: &App, frame: &mut Frame, area: Rect) {
     let table = Table::new(
         rows,
         [
-            Constraint::Min(4),
+            Constraint::Length(4),
             Constraint::Min(7),
             Constraint::Min(7),
             Constraint::Min(7),

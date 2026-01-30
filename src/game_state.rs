@@ -1,9 +1,14 @@
+use crate::app::App;
 use crossterm::event::{self, Event, KeyCode};
 
-use crate::app::App;
-use crate::states::GameState;
+#[derive(Clone, PartialEq)]
+pub enum GameState {
+    WaitingStart,
+    Running,
+    Paused,
+}
 
-pub fn handle_events(app: &mut App) -> Result<(), String> {
+pub fn handle_game_state(app: &mut App) -> Result<(), String> {
     if event::poll(app.tick_rate).map_err(|_| "Polling error")? {
         if let Event::Key(key) = event::read().map_err(|_| "Reading events error")? {
             match (key.code, app.get_game_state()) {
@@ -19,6 +24,12 @@ pub fn handle_events(app: &mut App) -> Result<(), String> {
                 }
                 (KeyCode::Char('p'), GameState::Paused) => {
                     app.set_game_state(GameState::Running);
+                }
+                (KeyCode::Up, _)=>{
+                    app.set_sunray_increment()
+                }
+                (KeyCode::Down, _)=>{
+                    app.set_sunray_decrement()
                 }
                 _ => {}
             }

@@ -6,7 +6,8 @@ edition = "2024"
 [dependencies]
 crossterm = "0.29.0"
 ratatui = "0.30.0"
-omc-galaxy = {path= "/Users/marco/Desktop/omc-galaxy"}
+#omc-galaxy = {path= "/Users/marco/Desktop/omc-galaxy"}
+omc-galaxy = {git="https://github.com/Advance-Programming-2025/omc-galaxy.git"}
 logging_txt = {path="logging_txt"}
 dotenv = "0.15.0"
 log = "0.4.29"

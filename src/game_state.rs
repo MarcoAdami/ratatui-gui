@@ -1,6 +1,6 @@
 use crate::app::App;
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
-use omc_galaxy::Game;
+use omc_galaxy::{Game, Orchestrator};
 use std::time::Duration;
 
 #[derive(Clone, PartialEq, Debug)]
@@ -59,6 +59,10 @@ pub fn handle_game_state(app: &mut App) -> Result<(), String> {
                 (KeyCode::Char('l'), _) => {
                     app.show_log_overlay = !app.show_log_overlay;
                 }
+                // (KeyCode::Char('r'), GameState::Ended)=>{
+                //     app.set_game_state(GameState::WaitingStart);
+                //     app.orchestrator = Orchestrator::new()?;
+                // }
                 _ => {}
             }
         }

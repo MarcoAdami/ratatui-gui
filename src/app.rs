@@ -97,8 +97,6 @@ impl App{
         };
         
         self.table_state.select(Some(i));
-        // Sincronizziamo il vecchio selector se serve ancora altrove
-        self.planet_id_selector = Some(i as u32);
     }
 
     pub(crate) fn decrement_id_selector(&mut self){
@@ -111,6 +109,5 @@ impl App{
         };
 
         self.table_state.select(Some(i));
-        self.planet_id_selector = Some(i as u32);
     }
 }
